@@ -99,9 +99,10 @@ Start the Flask server:
 ```bash
 python app.py
 ```
-Then open:
 
+Running locally (copy/paste):
 - http://127.0.0.1:5000/
+
 
 ## Requirements
 
