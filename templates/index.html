@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JD-Resume Interview Agent</title>
+    <style>
+        :root{
+            --bg:#0b1220;
+            --card:#111a2e;
+            --muted:#9fb2d4;
+            --text:#e8f0ff;
+            --primary:#4f8cff;
+            --primary2:#2b6df6;
+            --danger:#ff4d4d;
+            --success:#22c55e;
+            --border:rgba(255,255,255,.10);
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+            line-height:1.6;
+            color:var(--text);
+            background: radial-gradient(1200px 600px at 10% 0%, rgba(79,140,255,.25), transparent 60%),
+                        radial-gradient(900px 500px at 90% 10%, rgba(34,197,94,.18), transparent 55%),
+                        var(--bg);
+            padding: 18px;
+        }
+        .container{
+            max-width: 1050px;
+            margin: 0 auto;
+        }
+        .shell{
+            background: linear-gradient(180deg, rgba(17,26,46,.92), rgba(17,26,46,.78));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.35);
+            overflow:hidden;
+        }
+        header{
+            padding: 22px 22px 14px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(79,140,255,.25), transparent 60%);
+        }
+        .topbar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            flex-wrap:wrap;
+        }
+        h1{
+            font-size: 20px;
+            letter-spacing:.2px;
+        }
+        .subtitle{color:var(--muted); font-size: 13px; margin-top:6px}
+
+        .badge{
+            display:inline-flex; align-items:center; gap:8px;
+            padding: 8px 12px; border:1px solid var(--border);
+            border-radius: 999px; color: var(--muted);
+            background: rgba(255,255,255,.03);
+        }
+        .badge b{color:var(--text)}
+
+        .main{padding: 18px 22px 24px}
+
+        .tabs{
+            display:flex;
+            border:1px solid var(--border);
+            background: rgba(255,255,255,.03);
+            border-radius: 12px;
+            padding: 6px;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        .tab{
+            flex:1;
+            cursor:pointer;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: 12px 12px;
+            text-align:center;
+            font-weight: 700;
+            color: var(--muted);
+            background: transparent;
+            transition:.2s;
+        }
+        .tab:hover{border-color: rgba(79,140,255,.35)}
+        .tab.active{color: var(--text); background: rgba(79,140,255,.18); border-color: rgba(79,140,255,.45)}
+
+        .tab-content{display:none;}
+        .tab-content.active{display:block; animation:fadeIn .2s ease}
+        @keyframes fadeIn{from{opacity:.4}to{opacity:1}}
+
+        .grid{
+            display:grid;
+            grid-template-columns: 1.35fr .65fr;
+            gap: 16px;
+        }
+        @media (max-width: 900px){
+            .grid{grid-template-columns: 1fr;}
+        }
+
+        .card{
+            border:1px solid var(--border);
+            border-radius: 14px;
+            background: rgba(255,255,255,.02);
+            padding: 14px;
+        }
+        label{display:block; font-weight:800; font-size: 13px; color: var(--muted); margin-bottom: 8px}
+
+        textarea{
+            width:100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(0,0,0,.18);
+            color: var(--text);
+            min-height: 220px;
+            resize: vertical;
+            outline: none;
+            font-size: 14px;
+        }
+        textarea:focus{
+            border-color: rgba(79,140,255,.65);
+            box-shadow: 0 0 0 4px rgba(79,140,255,.18);
+        }
+
+        .row{display:flex; gap: 10px; flex-wrap:wrap; align-items:center; margin-top: 12px}
+
+        .btn{
+            appearance:none;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.04);
+            color: var(--text);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-weight: 800;
+            cursor:pointer;
+            transition: .2s;
+            user-select:none;
+        }
+        .btn:hover{transform: translateY(-1px); border-color: rgba(79,140,255,.55)}
+        .btn.primary{border-color: rgba(79,140,255,.65); background: rgba(79,140,255,.22)}
+        .btn.primary:hover{background: rgba(79,140,255,.30)}
+        .btn.danger{border-color: rgba(255,77,77,.55); background: rgba(255,77,77,.15)}
+        .btn:disabled{opacity:.55; cursor:not-allowed; transform:none}
+
+        .helper{color: var(--muted); font-size: 12px; margin-top: 8px}
+
+        .filebox{
+            border: 2px dashed rgba(79,140,255,.45);
+            border-radius: 14px;
+            padding: 16px;
+            background: rgba(79,140,255,.06);
+            text-align:center;
+        }
+        .filebox input{display:none}
+
+        .pill{
+            display:inline-block; padding: 6px 10px;
+            border:1px solid var(--border);
+            border-radius:999px; color: var(--muted);
+            background: rgba(255,255,255,.03);
+            font-size: 12px;
+        }
+
+        .results{
+            margin-top: 16px;
+            display:none;
+        }
+        .results.show{display:block;}
+        .results h2{font-size: 16px; margin-bottom: 10px}
+
+        .notice{
+            display:none;
+            margin-top: 12px;
+            border-radius: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,.03);
+        }
+        .notice.show{display:block;}
+        .notice.error{border-color: rgba(255,77,77,.55); background: rgba(255,77,77,.12)}
+        .notice.ok{border-color: rgba(34,197,94,.55); background: rgba(34,197,94,.12)}
+        .loading{
+            display:flex; align-items:center; gap:10px;
+        }
+        .spinner{
+            width: 14px; height: 14px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,.25);
+            border-top-color: var(--primary);
+            animation: spin .8s linear infinite;
+        }
+        @keyframes spin{to{transform: rotate(360deg)}}
+
+        .skills{
+            display:flex; flex-wrap:wrap; gap: 10px;
+            margin-top: 10px;
+        }
+        .tag{
+            background: rgba(79,140,255,.18);
+            border:1px solid rgba(79,140,255,.45);
+            color: var(--text);
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .sections{
+            display:grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        @media (max-width: 980px){
+            .sections{grid-template-columns: 1fr;}
+        }
+        .qcard{
+            border:1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px;
+            background: rgba(255,255,255,.02);
+            min-height: 140px;
+        }
+        .qtitle{display:flex; align-items:center; gap:10px; font-weight:900; margin-bottom: 10px; color: var(--text)}
+        .dot{width:10px; height:10px; border-radius: 50%; background: var(--primary)}
+        .qtitle.behavioral .dot{background: #7c3aed}
+        .qtitle.situational .dot{background: #f59e0b}
+
+        .qitems{display:flex; flex-direction:column; gap:10px;}
+        .qitem{
+            border-radius: 12px;
+            padding: 10px 12px;
+            border:1px solid rgba(255,255,255,.10);
+            background: rgba(0,0,0,.16);
+        }
+        .qnum{font-weight: 900; color: var(--muted); margin-right: 6px}
+        .qtext{font-weight: 750;}
+
+        .footer-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px}
+
+        .code{
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="shell">
+            <header>
+                <div class="topbar">
+                    <div>
+                        <h1>JD-Resume Interview Agent</h1>
+                        <div class="subtitle">Paste a Job Description → Extract skills → Generate interview questions</div>
+                    </div>
+                    <div class="badge" title="Runs locally on your machine">
+                        <span>⚡</span>
+                        <span>Local server</span>
+                        <b>Flask</b>
+                    </div>
+                </div>
+            </header>
+
+            <div class="main">
+                <div class="tabs" role="tablist" aria-label="Input type">
+                    <button class="tab active" data-tab="text-input" type="button">Text</button>
+                    <button class="tab" data-tab="file-upload" type="button">.txt File</button>
+                </div>
+
+                <div id="text-input" class="tab-content active">
+                    <div class="grid">
+                        <div class="card">
+                            <label for="job-description">Job Description</label>
+                            <textarea id="job-description" placeholder="Paste the job description here..." spellcheck="false"></textarea>
+                            <div class="row">
+                                <button class="btn" id="sample-btn" type="button">Use Sample JD</button>
+                                <button class="btn danger" id="clear-btn" type="button">Clear</button>
+                            </div>
+                            <div class="helper">Tip: longer descriptions usually produce more relevant skills.</div>
+                        </div>
+
+                        <div class="card">
+                            <label>Actions</label>
+                            <div class="row" style="margin-top:0">
+                                <button class="btn primary" id="analyze-btn" type="button">Analyze Job Description</button>
+                            </div>
+                            <div class="helper">Prevents multiple submits while the analysis is running.</div>
+
+                            <div class="notice" id="notice-box"></div>
+
+                            <div class="notice" id="loading-box" aria-live="polite">
+                                <div class="loading">
+                                    <div class="spinner"></div>
+                                    <div>
+                                        <div style="font-weight:900;">Analyzing job description...</div>
+                                        <div style="color:var(--muted); font-size:12px;">Generating skills + questions</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="file-upload" class="tab-content">
+                    <div class="grid">
+                        <div class="card">
+                            <label>Upload Job Description File (.txt only)</label>
+                            <div class="filebox" id="filebox">
+                                <div class="pill">Choose a file</div>
+                                <div style="height:10px"></div>
+                                <label class="btn" style="display:inline-flex; align-items:center; gap:10px">
+                                    📄 Select .txt
+                                    <input type="file" id="job-file" accept=".txt" />
+                                </label>
+                                <div class="helper" id="file-name">No file selected</div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <label>Actions</label>
+                            <div class="row" style="margin-top:0">
+                                <button class="btn primary" id="analyze-file-btn" type="button">Analyze File</button>
+                            </div>
+                            <div class="helper">File is read as UTF-8 text and processed locally on the server.</div>
+
+                            <div class="notice" id="notice-box-2"></div>
+
+                            <div class="notice" id="loading-box-2" aria-live="polite">
+                                <div class="loading">
+                                    <div class="spinner"></div>
+                                    <div>
+                                        <div style="font-weight:900;">Analyzing uploaded file...</div>
+                                        <div style="color:var(--muted); font-size:12px;">Generating skills + questions</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="results" class="results" aria-live="polite">
+                    <div class="card">
+                        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                            <div>
+                                <h2 style="margin-bottom:6px">Results</h2>
+                                <div class="helper">Skills extracted + interview questions grouped by type.</div>
+                            </div>
+                            <div class="footer-actions">
+                                <button class="btn" id="copy-json-btn" type="button">Copy JSON</button>
+                                <button class="btn" id="download-json-btn" type="button">Download JSON</button>
+                            </div>
+                        </div>
+
+                        <h2 style="margin-top:14px">Extracted Skills</h2>
+                        <div class="skills" id="skills-list"></div>
+
+                        <div class="sections">
+                            <div class="qcard">
+                                <div class="qtitle"><span class="dot"></span>Technical Questions</div>
+                                <div class="qitems" id="technical-questions"></div>
+                            </div>
+                            <div class="qcard">
+                                <div class="qtitle behavioral"><span class="dot"></span>Behavioral Questions</div>
+                                <div class="qitems" id="behavioral-questions"></div>
+                            </div>
+                            <div class="qcard">
+                                <div class="qtitle situational"><span class="dot"></span>Situational Questions</div>
+                                <div class="qitems" id="situational-questions"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    tab.classList.add('active');
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            const loadingBox = document.getElementById('loading-box');
+            const loadingBox2 = document.getElementById('loading-box-2');
+            const noticeBox = document.getElementById('notice-box');
+            const noticeBox2 = document.getElementById('notice-box-2');
+
+            const resultsEl = document.getElementById('results');
+            const skillsListEl = document.getElementById('skills-list');
+
+            const technicalEl = document.getElementById('technical-questions');
+            const behavioralEl = document.getElementById('behavioral-questions');
+            const situationalEl = document.getElementById('situational-questions');
+
+            let lastResult = null;
+
+            function setNotice(box, msg, type){
+                box.className = 'notice ' + (type === 'error' ? 'error' : 'ok') + ' show';
+                box.textContent = msg;
+            }
+            function clearNotice(box){
+                box.className = 'notice';
+                box.textContent = '';
+            }
+
+            function showLoading(which){
+                if(which === 1){ loadingBox.classList.add('show'); }
+                else{ loadingBox2.classList.add('show'); }
+            }
+            function hideLoading(which){
+                if(which === 1){ loadingBox.classList.remove('show'); }
+                else{ loadingBox2.classList.remove('show'); }
+            }
+
+            function setButtonsDisabled(disabled){
+                document.getElementById('analyze-btn').disabled = disabled;
+                document.getElementById('analyze-file-btn').disabled = disabled;
+                document.getElementById('sample-btn').disabled = disabled;
+                document.getElementById('clear-btn').disabled = disabled;
+            }
+
+            function escapeHtml(str){
+                return String(str)
+                    .replaceAll('&','&amp;')
+                    .replaceAll('<','<')
+                    .replaceAll('>','>')
+                    .replaceAll('"','"')
+                    .replaceAll("'",'&#039;');
+            }
+
+            function renderList(container, items){
+                container.innerHTML = '';
+                if(!items || items.length === 0){
+                    const empty = document.createElement('div');
+                    empty.className = 'qitem';
+                    empty.textContent = 'No items generated.';
+                    container.appendChild(empty);
+                    return;
+                }
+                items.forEach((q, i) => {
+                    const item = document.createElement('div');
+                    item.className = 'qitem';
+                    item.innerHTML = `<span class="qnum">${i+1}.</span><span class="qtext">${escapeHtml(q)}</span>`;
+                    container.appendChild(item);
+                });
+            }
+
+            function displayResults(result){
+                lastResult = result;
+                resultsEl.classList.add('show');
+
+                skillsListEl.innerHTML = '';
+                (result.skills || []).forEach(skill => {
+                    const tag = document.createElement('span');
+                    tag.className = 'tag';
+                    tag.textContent = skill;
+                    skillsListEl.appendChild(tag);
+                });
+
+                renderList(technicalEl, result.questions?.technical);
+                renderList(behavioralEl, result.questions?.behavioral);
+                renderList(situationalEl, result.questions?.situational);
+            }
+
+            function getSampleJD(){
+                return "We are looking for a Senior Python Developer with 5+ years of experience in developing web applications using Django and Flask. The ideal candidate should have strong knowledge of RESTful APIs, PostgreSQL database, and AWS cloud services. Experience with Docker containers and Kubernetes orchestration is preferred. Knowledge of React.js and JavaScript for frontend development is a plus. The candidate should be familiar with Git version control and agile/scrum methodologies. Strong problem-solving skills and ability to work in a team environment are essential.";
+            }
+
+            // Text actions
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const jobDescEl = document.getElementById('job-description');
+
+            document.getElementById('sample-btn').addEventListener('click', () => {
+                jobDescEl.value = getSampleJD();
+                setNotice(noticeBox, 'Sample JD loaded.', 'ok');
+            });
+
+            document.getElementById('clear-btn').addEventListener('click', () => {
+                jobDescEl.value = '';
+                clearNotice(noticeBox);
+                resultsEl.classList.remove('show');
+                lastResult = null;
+            });
+
+            analyzeBtn.addEventListener('click', async () => {
+                clearNotice(noticeBox);
+                const jdText = jobDescEl.value.trim();
+                if(!jdText){
+                    setNotice(noticeBox, 'Please enter a job description.', 'error');
+                    return;
+                }
+
+                setButtonsDisabled(true);
+                showLoading(1);
+
+                try{
+                    const response = await fetch('/analyze', {
+                        method: 'POST',
+                        headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ job_description: jdText })
+                    });
+                    const result = await response.json();
+
+                    if(!response.ok){
+                        setNotice(noticeBox, result.error || 'An error occurred', 'error');
+                        resultsEl.classList.remove('show');
+                        return;
+                    }
+                    displayResults(result);
+                    setNotice(noticeBox, 'Done. Results generated.', 'ok');
+                }catch(err){
+                    setNotice(noticeBox, 'Network error: ' + err.message, 'error');
+                }finally{
+                    hideLoading(1);
+                    setButtonsDisabled(false);
+                }
+            });
+
+            // File actions
+            const fileInput = document.getElementById('job-file');
+            const fileNameEl = document.getElementById('file-name');
+            const analyzeFileBtn = document.getElementById('analyze-file-btn');
+
+            fileInput.addEventListener('change', () => {
+                if(fileInput.files && fileInput.files[0]){
+                    fileNameEl.textContent = 'Selected: ' + fileInput.files[0].name;
+                }else{
+                    fileNameEl.textContent = 'No file selected';
+                }
+            });
+
+            analyzeFileBtn.addEventListener('click', async () => {
+                clearNotice(noticeBox2);
+                if(!fileInput.files || !fileInput.files[0]){
+                    setNotice(noticeBox2, 'Please select a .txt file.', 'error');
+                    return;
+                }
+                const file = fileInput.files[0];
+                if(!file.name.toLowerCase().endsWith('.txt')){
+                    setNotice(noticeBox2, 'Invalid file type. Only .txt is supported.', 'error');
+                    return;
+                }
+
+                setButtonsDisabled(true);
+                showLoading(2);
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try{
+                    const response = await fetch('/analyze-file', { method:'POST', body: formData });
+                    const result = await response.json();
+                    if(!response.ok){
+                        setNotice(noticeBox2, result.error || 'An error occurred', 'error');
+                        resultsEl.classList.remove('show');
+                        return;
+                    }
+                    displayResults(result);
+                    setNotice(noticeBox2, 'Done. Results generated.', 'ok');
+                }catch(err){
+                    setNotice(noticeBox2, 'Network error: ' + err.message, 'error');
+                }finally{
+                    hideLoading(2);
+                    setButtonsDisabled(false);
+                }
+            });
+
+            // Copy/Download
+            document.getElementById('copy-json-btn').addEventListener('click', async () => {
+                if(!lastResult){ return; }
+                try{
+                    await navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2));
+                    setNotice(noticeBox, 'Copied JSON to clipboard.', 'ok');
+                    setNotice(noticeBox2, 'Copied JSON to clipboard.', 'ok');
+                }catch(e){
+                    setNotice(noticeBox, 'Copy failed. Your browser may block clipboard access.', 'error');
+                    setNotice(noticeBox2, 'Copy failed. Your browser may block clipboard access.', 'error');
+                }
+            });
+
+            document.getElementById('download-json-btn').addEventListener('click', () => {
+                if(!lastResult){ return; }
+                const blob = new Blob([JSON.stringify(lastResult, null, 2)], {type:'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'jd_resume_results.json';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            });
+        });
+    </script>
+</body>
+</html>
+
