@@ -93,6 +93,16 @@ You can customize the agent by:
 - Adding or changing question templates in the `generate_interview_questions` method
 - Adjusting the filtering logic in `_is_generic_phrase` and `_normalize_skills` methods
 
+## Running the Web App
+
+Start the Flask server:
+```bash
+python app.py
+```
+Then open:
+
+- http://127.0.0.1:5000/
+
 ## Requirements
 
 - Python 3.7+
@@ -100,6 +110,7 @@ You can customize the agent by:
 - transformers
 - sentence-transformers
 - torch
+
 
 ## License
 
